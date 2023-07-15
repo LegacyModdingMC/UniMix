@@ -173,9 +173,6 @@ dependencies {
     def guava = 'com.google.guava:guava:21.0' // from mc1.12 onwards
     def gson = 'com.google.code.gson:gson:2.2.4'
 
-    stagingJar guava
-    stagingJar gson
-
     implementation guava
     implementation 'com.google.code.gson:gson:2.2.4'
     if (Float.parseFloat(asmVersion) < 6) {
@@ -384,7 +381,6 @@ task stagingJar(type: ShadowJar) {
     )
     
     mergeServiceFiles()
-    relocate 'com.google', 'org.spongepowered.include.com.google'
     archiveClassifier = "staging"
 }
 
