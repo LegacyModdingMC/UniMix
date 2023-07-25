@@ -31,13 +31,14 @@ import org.spongepowered.asm.service.MixinService;
 import org.spongepowered.asm.util.ObfuscationUtil;
 import org.spongepowered.asm.util.ObfuscationUtil.IClassRemapper;
 
+import java.lang.reflect.Field;
 /**
  * Base impl of remapper
  */
 public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
 
     protected final ILogger logger = MixinService.getService().getLogger("mixin");
-    protected final org.objectweb.asm.commons.Remapper remapper;
+    private org.objectweb.asm.commons.Remapper remapper;
 
     protected boolean supportsNullArguments = true;
     
@@ -56,14 +57,14 @@ public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
         if(!supportsNullArguments && (owner == null || name == null || desc == null)) {
             return name;
         }
-        String newName = this.remapper.mapMethodName(owner, name, desc);
+        String newName = this.getRemapper().mapMethodName(owner, name, desc);
         if (!newName.equals(name)) {
             return newName;
         }
         String obfOwner = this.unmap(owner);
         String obfDesc = this.unmapDesc(desc);
         this.logger.debug("{} is remapping obfuscated method {}{} for {}", this, name, obfDesc, obfOwner);
-        return this.remapper.mapMethodName(obfOwner, name, obfDesc);
+        return this.getRemapper().mapMethodName(obfOwner, name, obfDesc);
     }
 
     @Override
@@ -72,14 +73,14 @@ public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
         if(!supportsNullArguments && (owner == null || name == null || desc == null)) {
             return name;
         }
-        String newName = this.remapper.mapFieldName(owner, name, desc);
+        String newName = this.getRemapper().mapFieldName(owner, name, desc);
         if (!newName.equals(name)) {
             return newName;
         }
         String obfOwner = this.unmap(owner);
         String obfDesc = this.unmapDesc(desc);
         this.logger.debug("{} is remapping obfuscated field {}{} for {}", this, name, obfDesc, obfOwner);
-        return this.remapper.mapFieldName(obfOwner, name, obfDesc);
+        return this.getRemapper().mapFieldName(obfOwner, name, obfDesc);
     }
 
     @Override
@@ -88,7 +89,7 @@ public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
         if(typeName == null) {
             return typeName;
         }
-        return this.remapper.map(typeName);
+        return this.getRemapper().map(typeName);
     }
     
     @Override
@@ -104,7 +105,7 @@ public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
         if(desc == null) {
             return desc;
         }
-        return this.remapper.mapDesc(desc);
+        return this.getRemapper().mapDesc(desc);
     }
     
     @Override
@@ -116,4 +117,17 @@ public abstract class RemapperAdapter implements IRemapper, IClassRemapper {
         return newDesc != null ? newDesc : desc;
     }
 
+    protected org.objectweb.asm.commons.Remapper getRemapper() {
+        if (this.remapper == null) { // If remapper == null, initialize FMLDeobfuscatingRemapper
+            try {
+                Class<?> clDeobfRemapper = RemapperAdapterFML.getFMLDeobfuscatingRemapper();
+                Field singletonField = clDeobfRemapper.getDeclaredField(RemapperAdapterFML.INSTANCE_FIELD);
+                this.remapper = (org.objectweb.asm.commons.Remapper)singletonField.get(null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        }
+        return this.remapper;
+    }
 }
