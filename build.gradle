@@ -11,7 +11,7 @@ buildscript {
 }
 
 plugins {
-    id "me.modmuss50.remotesign" version "0.4.0"
+    //id "me.modmuss50.remotesign" version "0.4.0"
     id "io.github.goooler.shadow"  version "8.1.7"
 }
 
@@ -568,23 +568,23 @@ publishing {
     }
 }
 
-remoteSign {
-    requestUrl = ENV.SIGNING_SERVER
-    pgpAuthKey = ENV.SIGNING_PGP_KEY
-    useDummyForTesting = ENV.SIGNING_SERVER == null
-    sign publishing.publications.developer
-}
+//remoteSign {
+//    requestUrl = ENV.SIGNING_SERVER
+//    pgpAuthKey = ENV.SIGNING_PGP_KEY
+//    useDummyForTesting = ENV.SIGNING_SERVER == null
+//    sign publishing.publications.developer
+//}
 
 // A task to ensure that the version being released has not already been released.
-task checkVersion {
-    doFirst {
-        def xml = new URL("https://maven.fabricmc.net/net/fabricmc/sponge-mixin/maven-metadata.xml").text
-        def metadata = new XmlSlurper().parseText(xml)
-        def versions = metadata.versioning.versions.version*.text();
-        if (versions.contains(version)) {
-            throw new RuntimeException("${version} has already been released!")
-        }
-    }
-}
+//task checkVersion {
+//    doFirst {
+//        def xml = new URL("https://maven.fabricmc.net/net/fabricmc/sponge-mixin/maven-metadata.xml").text
+//        def metadata = new XmlSlurper().parseText(xml)
+//        def versions = metadata.versioning.versions.version*.text();
+//        if (versions.contains(version)) {
+//            throw new RuntimeException("${version} has already been released!")
+//        }
+//    }
+//}
 
 //publish.mustRunAfter checkVersion
